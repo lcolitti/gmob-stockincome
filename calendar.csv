@@ -1,0 +1,8 @@
+RESIDENCE,"Start date","End date","Country"
+,2007-01-01,2007-06-15,IE
+,2007-06-16,2012-01-15,US_CA
+,2012-01-16,2013-12-31,JP
+
+
+BUSINESSTRIPS,"Start date","End date","Country"
+,2013-06-11,2013-06-21,US_CA
