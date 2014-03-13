@@ -17,7 +17,7 @@ import stocktable
 import taxcalendar
 import currencyconverter
 
-__version__ = "0.1"
+__version__ = "0.2"
 
 # Figure out what year it is so we can set flag defaults.
 thisyear = datetime.date.today().year
@@ -39,8 +39,8 @@ FLAGS.add_argument("--statement", type=str,
                    default="google_year_end_stock_statement.csv",
                    help="Google year end stock statement")
 FLAGS.add_argument("--check_percentages", type=int,
-                   default=1,
-                   help="Check CA percentages against Google numbers")
+                   default=0,
+                   help="Check US / US_CA percentages against Google numbers")
 FLAGS = FLAGS.parse_args(sys.argv[1:])
 
 
@@ -65,8 +65,7 @@ def main():
                                             grant_data, converter, calendar)
   all_countries = set()
   for table in sales.values():
-    print "Setting check percentages to ", repr(FLAGS.check_percentages)
-    table.SetCheckPercentages(FLAGS.check_percentages)
+    table.SetCheckPercentages(int(FLAGS.check_percentages))
     all_countries.update(table.GetAllCountries())
   print
   print "Read stock data."
@@ -74,14 +73,23 @@ def main():
   print "  Countries:", all_countries
   print
 
+  GSUS = sales["GSUS"]
+  #assert 0.00 == sales["GSUS"].GetCountryPercentage(GSUS["A10751504"]["US"], "US")
+
   print "Country totals:"
   for section, table in sales.iteritems():
-    column = table.FindIncomeColumn()
+    column = table.FindTotalColumn()
     print "    %s" % section
     for country in all_countries:
       print "        %5s: %12s" % (country, table.GetCountryTotal(country,
                                                                   column))
     print
 
+  for country in all_countries:
+    for section, table in sales.iteritems():
+      report = table.GenerateCountryReport(country)
+      filename = "stockincome.%s.%s.html" % (section, country)
+      open(filename, "w").write(report)
+      print "Wrote report on %s for %s to %s" % (section, country, filename)
 
 #main()

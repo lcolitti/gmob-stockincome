@@ -3,6 +3,7 @@ import datetime
 
 import csvtable
 
+
 class Interval(collections.namedtuple("Interval", "start end country")):
 
   DATE_FORMAT = "%Y-%m-%d"
@@ -32,6 +33,12 @@ class TaxCalendar(object):
 
   def Debug(self, s):
     if self.debug: print s
+
+  @staticmethod
+  def IsCountryOrStateOf(country1, country2):
+    """Returns true if country1 is country2 or a state of country2."""
+    return (country1 == country2 or
+            (country2 is not None and country1.startswith(country2 + "_")))
 
   def __init__(self, residence, businesstrips, debug=False):
     if len(residence) == 0:
@@ -124,8 +131,8 @@ class TaxCalendar(object):
             # that you would have qualified for treaty exemption from Japan
             # taxation." So don't count business trips to a country, only from
             # a country.
-            if trip.country == taxhome:
-              self.Debug("Skipping business trip to %s when calculating "
+            if self.IsCountryOrStateOf(trip.country, taxhome):
+              self.Debug("      Skipping business trip to %s when calculating "
                          "resident days for %s" % (trip.country,taxhome))
               continue
             days[trip.country] += trip_days
@@ -137,6 +144,7 @@ class TaxCalendar(object):
       raise ValueError("Total days between %s and %s don't match: "
                        "%d, should be %d, got: " % (
                        start, end, sum(days.values()), expected_total), days)
+    self.Debug(days)
     return days
 
   def FindLocationsForYear(self, year):
