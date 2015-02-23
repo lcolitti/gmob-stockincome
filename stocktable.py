@@ -247,8 +247,9 @@ class StockTable(csvtable.CSVTable):
     if isinstance(heading, dict):
       heading = heading[self.year]
     elif not isinstance(heading, str):
-      raise NotImplementedError("Can't find column heading %s in %s" %
-                                (columntype, self.name))
+      raise NotImplementedError(
+          "Column heading %s in %s is neither string nor dict" %
+          (columntype, self.name))
     return self.FindColumn(heading)
 
   def FindTotalColumn(self):
