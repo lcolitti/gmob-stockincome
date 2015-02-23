@@ -12,11 +12,16 @@ class MURCCurrencyConverter(object):
   DATE_FORMAT = "%m/%d/%Y"  # 1/27/2013
   RATES = ["TTS", "TTB", "TTM"]
 
-  def __init__(self, filename):
+  def GetFilename(self, year, filename):
+    if filename:
+      return filename
+    return "murc_%d.csv" % year
 
+  def __init__(self, year, filename):
     # Dictionary of currency values indexed by currency name and date.
     self.values = collections.OrderedDict()
 
+    filename = self.GetFilename(year, filename)
     reader = csv.reader(open(filename, "r"), delimiter=",", quotechar='"')
 
     # Read headings.

@@ -155,7 +155,10 @@ class StockTable(csvtable.CSVTable):
       raise ValueError("Column #%d must be '%s', found '%s'"
                        % (index, expected, headings[index]))
 
-  def __init__(self, name, headings, converter, calendar, grants):
+  def __init__(self, name, year, headings, converter, calendar, grants):
+    if year != 2013:
+      raise NotImplementedError("Only support tax year 2013.")
+
     super(StockTable, self).__init__(name, headings)
 
     # The stock events. A dictionary of data rows indexed by purno and country.
@@ -178,7 +181,7 @@ class StockTable(csvtable.CSVTable):
     self.check_percentages = True
 
   @staticmethod
-  def ReadFromCSV(report_filename, grant_data, converter, calendar):
+  def ReadFromCSV(report_filename, year, grant_data, converter, calendar):
 
     def CheckExpectedTables(data, expected):
       if sorted(data.keys()) != sorted(expected):
@@ -186,7 +189,7 @@ class StockTable(csvtable.CSVTable):
             sorted(data.keys()), expected))
 
     def CreateStockTable(name, headings):
-      return StockTable(name, headings, converter, calendar, grant_data)
+      return StockTable(name, year, headings, converter, calendar, grant_data)
 
     data = csvtable.ReadMultitableCSV(report_filename, CreateStockTable)
     CheckExpectedTables(grant_data, data.keys())
