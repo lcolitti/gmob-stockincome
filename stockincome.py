@@ -47,9 +47,6 @@ FLAGS = FLAGS.parse_args(sys.argv[1:])
 
 def main():
   converter = currencyconverter.MURCCurrencyConverter(FLAGS.year, FLAGS.fx)
-  test_date = datetime.datetime.strptime("27-Jan-13", "%d-%b-%y")
-  assert 4981.35 == round(converter.ConvertCurrency(55, "USD", "JPY",
-                                                  test_date, "TTM"), 2)
   print "Read exchange rate data."
 
   calendar = taxcalendar.TaxCalendar.ReadFromCSV(FLAGS.calendar)

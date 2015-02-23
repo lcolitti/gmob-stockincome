@@ -6,7 +6,13 @@ import collections
 import datetime
 import re
 
+
 class MURCCurrencyConverter(object):
+
+  TEST_DATA = {
+    2013: ("27-Jan-13", 55, 4981.35),
+    2014: ("13-Jan-14", 55, 5772.25),
+  }
 
   BASE_CURRENCY = "JPY"
   DATE_FORMAT = "%m/%d/%Y"  # 1/27/2013
@@ -21,7 +27,8 @@ class MURCCurrencyConverter(object):
     # Dictionary of currency values indexed by currency name and date.
     self.values = collections.OrderedDict()
 
-    filename = self.GetFilename(year, filename)
+    self.year = year
+    filename = self.GetFilename(self.year, filename)
     reader = csv.reader(open(filename, "r"), delimiter=",", quotechar='"')
 
     # Read headings.
@@ -76,6 +83,8 @@ class MURCCurrencyConverter(object):
     if numdates not in (365, 366):
       raise ValueError("Invalid number of FX dates")
 
+    self.SanityCheck()
+
   def GetRate(self, currency, date, rate):
     rate_index = self.RATES.index(rate)
     if rate_index == -1:
@@ -109,3 +118,14 @@ class MURCCurrencyConverter(object):
       return base_value
     else:
       return base_value / self.GetRate(to_currency, date, rate)
+
+  def SanityCheck(self):
+    try:
+      datestr, dollars, expected_jpy = self.TEST_DATA[self.year]
+    except KeyError:
+      raise NotImplementedError("No FX test datapoint for tax year %d" % year)
+    date = datetime.datetime.strptime(datestr, "%d-%b-%y")
+    converted = round(self.ConvertCurrency(55, "USD", "JPY", date, "TTM"), 2)
+    msg = ("Self-test failed! Expected %d USD on %s to equal %.2f JPY, got %.2f"
+           % (dollars, datestr, expected_jpy, converted))
+    assert converted == expected_jpy, msg
