@@ -86,11 +86,20 @@ class StockTable(csvtable.CSVTable):
       },
       "PRICE": {
           "GSUS": "Award Price",
-          "OPTIONS": "Option Price",
+          "OPTIONS": {
+              2013: "Option Price",
+              2014: "Grant Price",
+          }
       },
       "TOTAL": {
-          "GSUS": "Total gain (value) of GSUs at vest",
-          "OPTIONS": "Total exercisable gain (value)",
+          "GSUS": {
+              2013: "Total gain (value) of GSUs at vest",
+              2014: "GSU's Vested",   # Note HACK in FindColumn!
+          },
+          "OPTIONS": {
+              2013: "Total exercisable gain (value)",
+              2014: "Total Exercisable Gain",
+          }
       },
       "GOOGLE_PERCENTAGE": {
           "GSUS": {
@@ -243,6 +252,16 @@ class StockTable(csvtable.CSVTable):
     return self.FindColumn(heading)
 
   def FindTotalColumn(self):
+
+    # HACK: the 2014 gmob CSV files have duplicate column headings. Sigh.
+    def FindLastIndex(l, value):
+      return max(i for i, item in enumerate(l) if item == value)
+
+    if self.year == 2014 and self.name == "GSUS":
+      heading = self.COLUMNS["TOTAL"]["GSUS"][2014]
+      lastindex = FindLastIndex(self.headings, heading)
+      return lastindex - 2
+
     return self.FindColumnByType("TOTAL")
 
   def FindDateColumn(self):
