@@ -32,9 +32,6 @@ FLAGS.add_argument("--calendar", type=str,
 FLAGS.add_argument("--grants", type=str,
                    default="grants.csv",
                    help="CSV file with GSU and option stock grants")
-FLAGS.add_argument("--statement", type=str,
-                   default="google_year_end_stock_statement.csv",
-                   help="Google year end stock statement")
 FLAGS.add_argument("--check_percentages", type=int,
                    default=0,
                    help="Check US / US_CA percentages against Google numbers")
@@ -59,8 +56,8 @@ def main():
   print
   print "Read grant data."
 
-  sales = stocktable.StockTable.ReadFromCSV(FLAGS.statement, FLAGS.year,
-                                            grant_data, converter, calendar)
+  sales = stocktable.StockTable.ReadFromCSV(FLAGS.year, grant_data,
+                                            converter, calendar)
   all_countries = set()
   for table in sales.values():
     table.SetCheckPercentages(int(FLAGS.check_percentages))

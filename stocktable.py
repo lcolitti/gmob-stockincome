@@ -7,6 +7,7 @@ import StringIO
 
 import csvtable
 
+
 CURRENCIES = {
     "JP": "JPY",
     "US": "USD",
@@ -58,6 +59,12 @@ class StockTable(csvtable.CSVTable):
 
   DATE_FORMAT = "%d-%b-%y"  # 25-Jan-13.
   STATEMENT_COUNTRY = "US"  # To parse currency data and for month names.
+
+  STATEMENT_FILES = {
+      2013: {None: "google_year_end_stock_statement.csv"},
+      2014: {"GSUS": "gmob_gsu_data_lorenzo.csv",
+             "OPTIONS": "gmob_options_data_lorenzo.csv"},
+  }
 
   COLUMNS = {
       "DATE": {
@@ -156,9 +163,6 @@ class StockTable(csvtable.CSVTable):
                        % (index, expected, headings[index]))
 
   def __init__(self, name, year, headings, converter, calendar, grants):
-    if year != 2013:
-      raise NotImplementedError("Only support tax year 2013.")
-
     super(StockTable, self).__init__(name, headings)
 
     # The stock events. A dictionary of data rows indexed by purno and country.
@@ -180,8 +184,8 @@ class StockTable(csvtable.CSVTable):
     # By default, check percentages.
     self.check_percentages = True
 
-  @staticmethod
-  def ReadFromCSV(report_filename, year, grant_data, converter, calendar):
+  @classmethod
+  def ReadFromCSV(cls, year, grant_data, converter, calendar):
 
     def CheckExpectedTables(data, expected):
       if sorted(data.keys()) != sorted(expected):
@@ -191,7 +195,19 @@ class StockTable(csvtable.CSVTable):
     def CreateStockTable(name, headings):
       return StockTable(name, year, headings, converter, calendar, grant_data)
 
-    data = csvtable.ReadMultitableCSV(report_filename, CreateStockTable)
+    try:
+      statements = cls.STATEMENT_FILES[year]
+    except KeyError:
+      raise NotImplementedError(
+          "Don't know what files to use for tax year %d" % year)
+
+    filenames = statements.values()
+    if len(filenames) == 1:
+      data = csvtable.ReadMultitableCSV(filenames[0], CreateStockTable)
+    else:
+      tablenames, filenames = statements.keys(), filenames
+      constructors = [CreateStockTable] * len(statements)
+      data = csvtable.ReadCSVTables(tablenames, filenames, constructors)
     CheckExpectedTables(grant_data, data.keys())
 
     return data
