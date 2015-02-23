@@ -165,6 +165,9 @@ class StockTable(csvtable.CSVTable):
   def __init__(self, name, year, headings, converter, calendar, grants):
     super(StockTable, self).__init__(name, headings)
 
+    # What year is it?
+    self.year = year
+
     # The stock events. A dictionary of data rows indexed by purno and country.
     self.data = collections.OrderedDict()
 
@@ -212,20 +215,26 @@ class StockTable(csvtable.CSVTable):
 
     return data
 
-  def FindColumn(self, name):
-    return self.headings.index(name) - 2
+  def FindColumn(self, heading):
+    return self.headings.index(heading) - 2
+
+  def FindColumnByType(self, columntype):
+    heading = self.COLUMNS[columntype][self.name]
+    if isinstance(heading, dict):
+      heading = heading[self.year]
+    elif not isinstance(heading, str):
+      raise NotImplementedError("Can't find column heading %s in %s" %
+                                (columntype, self.name))
+    return self.FindColumn(heading)
 
   def FindTotalColumn(self):
-    return self.FindColumn(self.COLUMNS["TOTAL"][self.name])
+    return self.FindColumnByType("TOTAL")
 
   def FindDateColumn(self):
-    return self.FindColumn(self.COLUMNS["DATE"][self.name])
+    return self.FindColumnByType("DATE")
 
   def FindGrantColumn(self):
-    return self.FindColumn(self.COLUMNS["GRANT"][self.name])
-
-  def FindTotalColumn(self):
-    return self.FindColumn(self.COLUMNS["TOTAL"][self.name])
+    return self.FindColumnByType("GRANT")
 
   def AddRow(self, row):
     self.CheckRow(row)
@@ -393,8 +402,9 @@ class StockTable(csvtable.CSVTable):
             value = values[name]
           else:
             if name.isupper():
-              name = self.COLUMNS[name][self.name]
-            value = row[self.FindColumn(name)]
+              value = row[self.FindColumnByType(name)]
+            else:
+              value = row[self.FindColumn(name)]
           if isinstance(value, datetime.datetime):
             value = value.strftime("%Y-%m-%d")
           outputrow.append(str(value))
