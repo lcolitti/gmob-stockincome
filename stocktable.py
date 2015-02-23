@@ -312,7 +312,7 @@ class StockTable(csvtable.CSVTable):
       if value[0] == "$":
         return locale.atof(value[1:])
       else:
-        raise ValueError("Don't understand cell value %s" % value)
+        return locale.atof(value)
     finally:
       locale.setlocale(locale.LC_ALL, loc)
 
