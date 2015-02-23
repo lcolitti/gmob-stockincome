@@ -66,6 +66,11 @@ class StockTable(csvtable.CSVTable):
              "OPTIONS": "gmob_options_data_lorenzo.csv"},
   }
 
+  GOOGLE_PERCENTAGE_HEADING_2013 = ("Percentage of total gain subject to tax "
+                                    "withholding in this country or US state")
+  GOOGLE_PERCENTAGE_HEADING_2014 = ("Percentage Total Gain Subject to Tax "
+                                    "Witholding in this Country or US State")
+
   COLUMNS = {
       "DATE": {
           "GSUS": "Vest Date",
@@ -86,7 +91,17 @@ class StockTable(csvtable.CSVTable):
       "TOTAL": {
           "GSUS": "Total gain (value) of GSUs at vest",
           "OPTIONS": "Total exercisable gain (value)",
-      }
+      },
+      "GOOGLE_PERCENTAGE": {
+          "GSUS": {
+              2013: GOOGLE_PERCENTAGE_HEADING_2013,
+              2014: GOOGLE_PERCENTAGE_HEADING_2014,
+          },
+          "OPTIONS": {
+              2013: GOOGLE_PERCENTAGE_HEADING_2013,
+              2014: GOOGLE_PERCENTAGE_HEADING_2014,
+          },
+      },
   }
 
   REPORT_TITLES = {
@@ -324,7 +339,8 @@ class StockTable(csvtable.CSVTable):
     if country == "US_CA" or country == "US":
       notrip_days = self.GetCountryDays(row, country, False)
       notrip_percentage = float(notrip_days) / total_days
-      google_percentage = float(row[9][:-1])
+      google_percentage_column = self.FindColumnByType("GOOGLE_PERCENTAGE")
+      google_percentage = float(row[google_percentage_column][:-1])
       if round(notrip_percentage * 100, 2) != round(google_percentage, 2):
         msg = "Percentage mismatch for %s: %.2f%% vs %.2f%% (%d days)" % (
             row[0], notrip_percentage * 100, google_percentage, notrip_days)
