@@ -105,7 +105,7 @@ class TaxCalendar(object):
   def GetYears(self):
     return self.years
 
-  def FindLocations(self, start, end, taxhome=None, include_trips=True):
+  def FindLocations(self, start, end, taxcountry=None, include_trips=True):
     # A dict mapping locations to days in that location.
     days = collections.defaultdict(int)
     for residence in self.residence:
@@ -114,26 +114,26 @@ class TaxCalendar(object):
         continue
       this_start, this_end = overlap
       numdays = (this_end - this_start).days + 1
-      self.Debug("Living in %s from %s to %s (%d days)." % (
+      self.Debug("  Living in %s from %s to %s (%d days)." % (
                  residence.country, str(this_start), str(this_end), numdays))
       if include_trips:
-        self.Debug("  Business trips:")
+        self.Debug("    Business trips:")
         for trip in self.businesstrips:
           overlap = trip.Intersect(this_start, this_end)
           if overlap:
             trip_start, trip_end = overlap
             trip_days = (trip_end - trip_start).days + 1
-            self.Debug("    Trip to %s from %s to %s (%d days), living in %s" %
+            self.Debug("      Trip to %s from %s to %s (%d days), %s taxes" %
                        (trip.country, str(trip_start), str(trip_end), trip_days,
-                        taxhome))
+                        taxcountry))
             # PWC guidance: "Assuming you were a non-resident at the time of the
             # trip, those Japan days will not be considered under the assumption
             # that you would have qualified for treaty exemption from Japan
             # taxation." So don't count business trips to a country, only from
             # a country.
-            if self.IsCountryOrStateOf(trip.country, taxhome):
-              self.Debug("      Skipping business trip to %s when calculating "
-                         "resident days for %s" % (trip.country,taxhome))
+            if self.IsCountryOrStateOf(trip.country, taxcountry):
+              self.Debug("        Skipping business trip to %s when calculating"
+                         " resident days for %s" % (trip.country, taxcountry))
               continue
             days[trip.country] += trip_days
             days[residence.country] -= (trip_days)
@@ -144,7 +144,8 @@ class TaxCalendar(object):
       raise ValueError("Total days between %s and %s don't match: "
                        "%d, should be %d, got: " % (
                        start, end, sum(days.values()), expected_total), days)
-    self.Debug(days)
+    how = "including trips" if include_trips else "not including trips"
+    self.Debug("    Total days %s: %s" % (how, days.items()))
     return days
 
   def FindLocationsForYear(self, year):

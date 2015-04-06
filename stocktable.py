@@ -186,8 +186,10 @@ class StockTable(csvtable.CSVTable):
       raise ValueError("Column #%d must be '%s', found '%s'"
                        % (index, expected, headings[index]))
 
-  def __init__(self, name, year, headings, converter, calendar, grants):
+  def __init__(self, name, year, headings,
+               converter, calendar, grants, debug=False):
     super(StockTable, self).__init__(name, headings)
+    self.debug = debug
 
     # What year is it?
     self.year = year
@@ -210,6 +212,9 @@ class StockTable(csvtable.CSVTable):
 
     # By default, check percentages.
     self.check_percentages = True
+
+  def Debug(self, s):
+    if self.debug: print s
 
   @classmethod
   def ReadFromCSV(cls, year, grant_data, converter, calendar):
@@ -345,7 +350,7 @@ class StockTable(csvtable.CSVTable):
     grant = row[self.FindGrantColumn()]
     grant_date = self.GetGrantDate(grant)
     locations = self.calendar.FindLocations(grant_date, date,
-                                            taxhome=country,
+                                            taxcountry=country,
                                             include_trips=include_trips)
     return sum(locations[c] for c in locations
                if self.calendar.IsCountryOrStateOf(c, country))
@@ -412,6 +417,7 @@ class StockTable(csvtable.CSVTable):
         fx_rate = self.converter.ConvertCurrency(1, "USD", currency,
                                                  date, "TTM")
 
+        self.Debug("Purno %s in country %s" % (purno, country))
         total_days = self.GetTotalDays(row)
         country_days = self.GetCountryDays(row, country, False)
         trip_days = country_days - self.GetCountryDays(row, country, True)
