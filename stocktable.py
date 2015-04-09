@@ -405,7 +405,8 @@ class StockTable(csvtable.CSVTable):
       columns = self.REPORT_COLUMNS[country[:country.index("_")]]
 
     report = []
-    headings = [description for name, description in columns]
+    params = {"country": COUNTRY_NAMES[country]}
+    headings = [description % params for name, description in columns]
     report.append(headings)
 
     total = 0.00
