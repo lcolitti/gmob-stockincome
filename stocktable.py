@@ -127,8 +127,8 @@ class StockTable(csvtable.CSVTable):
           ("Fair Market Value", "FMV"),
           ("TOTAL", "Total"),
           ("_TOTAL_DAYS", "Vesting days"),
-          ("_COUNTRY_DAYS", "Days as resident"),
-          ("_TRIP_DAYS", "Foreign work days"),
+          ("_COUNTRY_DAYS", "Days in %(country)s"),
+          ("_FOREIGN_DAYS", "Days outside %(country)s"),
           ("_TAXABLE", "Taxable income"),
       ],
       "JP": [
@@ -136,7 +136,7 @@ class StockTable(csvtable.CSVTable):
           ("TOTAL", "利益の額<br>(Gain)"),
           ("_AWARD_DATE", "付与日<br>(Grant date)"),
           ("_TOTAL_DAYS", "付与日から行使日までの総日数<br>(Vesting days)"),
-          ("_COUNTRY_DAYS",
+          ("_RESIDENT_DAYS",
            "入国から行使日までの日数<br>(Vesting days as Japan resident)"),
           ("_TRIP_DAYS", "国外勤務日数<br>(Vesting days working abroad)"),
           ("_TAXABLE", "国内源泉所得に係る金額<br>(Japan-source income, $)"),
@@ -420,9 +420,11 @@ class StockTable(csvtable.CSVTable):
 
         self.Debug("Purno %s in country %s" % (purno, country))
         total_days = self.GetTotalDays(row)
-        country_days = self.GetCountryDays(row, country, False)
-        trip_days = country_days - self.GetCountryDays(row, country, True)
-        country_percentage = (country_days - trip_days) / float(total_days)
+        resident_days = self.GetCountryDays(row, country, False)
+        country_days = self.GetCountryDays(row, country, True)
+        trip_days = resident_days - country_days
+        foreign_days = total_days - country_days
+        country_percentage = (country_days) / float(total_days)
         taxable = self.GetTotal(row) * country_percentage
         local_taxable = taxable * fx_rate
         total += local_taxable
@@ -432,6 +434,8 @@ class StockTable(csvtable.CSVTable):
             "_FX_RATE": fx_rate,
             "_TOTAL_DAYS": total_days,
             "_COUNTRY_DAYS": country_days,
+            "_FOREIGN_DAYS": foreign_days,
+            "_RESIDENT_DAYS": resident_days,
             "_TRIP_DAYS": trip_days,
             "_TAXABLE": self.CurrencyValueToString(taxable,
                                                    self.STATEMENT_COUNTRY),
