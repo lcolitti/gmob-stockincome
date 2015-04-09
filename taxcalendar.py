@@ -131,7 +131,7 @@ class TaxCalendar(object):
             # that you would have qualified for treaty exemption from Japan
             # taxation." So don't count business trips to a country, only from
             # a country.
-            if self.IsCountryOrStateOf(trip.country, taxcountry):
+            if trip.country == "JP" and taxcountry == "JP":
               self.Debug("        Skipping business trip to %s when calculating"
                          " resident days for %s" % (trip.country, taxcountry))
               continue
