@@ -78,6 +78,7 @@ def main():
     for country in all_countries:
       print "        %5s: %12s" % (country, table.GetCountryTotal(country,
                                                                   column))
+    print "    Worldwide: %12s" % table.GetWorldwideTotal()
     print
 
   for country in all_countries:

@@ -399,15 +399,27 @@ class StockTable(csvtable.CSVTable):
         total += value * percentage
     return self.CurrencyValueToString(total, country)
 
-  def PrintEvents(self):
+  def ExamineAllEvents(self, do_print):
+    """Examines, and possibly prints, all events, and returns the total."""
+    total = 0.0
     for purno in self.data:
       event = self.data[purno]
       randomcountry = event.keys()[0]
       randomrow = event[randomcountry]
-      print purno, randomrow[0], randomrow[2], randomrow[6]
-      for country in event:
-        print "  %s: %.2f%%" % (
-            country, self.GetCountryPercentage(event[country], country) * 100)
+      total += self.GetTotal(randomrow)
+      if do_print:
+        print purno, randomrow[0], randomrow[2], randomrow[6]
+        for country in event:
+          print "  %s: %.2f%%" % (
+              country, self.GetCountryPercentage(event[country], country) * 100)
+    return total
+
+  def GetWorldwideTotal(self):
+    total = self.ExamineAllEvents(False)
+    return self.CurrencyValueToString(total, self.STATEMENT_COUNTRY)
+
+  def PrintEvents(self):
+    self.ExamineAllEvents(True)
 
   def GenerateCountryReport(self, country):
     """Generates a summary report for the given country."""
