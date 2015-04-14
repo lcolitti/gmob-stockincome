@@ -1,3 +1,5 @@
+"""Classes to calculate time spent in various countries."""
+
 import collections
 import datetime
 
@@ -6,14 +8,16 @@ import csvtable
 
 class Interval(collections.namedtuple("Interval", "start end country")):
 
+  """Represents a date interval."""
+
   DATE_FORMAT = "%Y-%m-%d"
 
   def __new__(cls, start, end, country):
-      return super(cls, Interval).__new__(
-          cls,
-          datetime.datetime.strptime(start, cls.DATE_FORMAT),
-          datetime.datetime.strptime(end, cls.DATE_FORMAT),
-          country)
+    return super(cls, Interval).__new__(
+        cls,
+        datetime.datetime.strptime(start, cls.DATE_FORMAT),
+        datetime.datetime.strptime(end, cls.DATE_FORMAT),
+        country)
 
   def Intersect(self, start, end):
     if end >= self.start and start <= self.end:
@@ -29,6 +33,8 @@ class Interval(collections.namedtuple("Interval", "start end country")):
 
 class TaxCalendar(object):
 
+  """A tax to calculate time spent in various countries."""
+
   DATE_FORMAT = "%Y-%m-%d"
 
   def Debug(self, s):
@@ -41,7 +47,7 @@ class TaxCalendar(object):
             (country2 is not None and country1.startswith(country2 + "_")))
 
   def __init__(self, residence, businesstrips, debug=False):
-    if len(residence) == 0:
+    if not residence:
       raise ValueError("Need to have lived somewhere")
     if debug:
       print 'RESIDENCE,"Start date","End date"'
@@ -83,10 +89,12 @@ class TaxCalendar(object):
 
   @staticmethod
   def ReadFromCSV(filename):
+    """Generates a TaxCalendar from a multi-table CSV file."""
 
     class LocationTable(csvtable.CSVTable):
+
       def __init__(self, name, headings):
-        super(LocationTable, self).__init__(name, headings) 
+        super(LocationTable, self).__init__(name, headings)
         self.data = []
 
       def AddRow(self, row):
@@ -106,7 +114,7 @@ class TaxCalendar(object):
     return self.years
 
   def FindLocations(self, start, end, taxcountry=None, include_trips=True):
-    # A dict mapping locations to days in that location.
+    """Returns a a dict mapping locations to days in that location."""
     days = collections.defaultdict(int)
     for residence in self.residence:
       overlap = residence.Intersect(start, end)
@@ -115,7 +123,7 @@ class TaxCalendar(object):
       this_start, this_end = overlap
       numdays = (this_end - this_start).days + 1
       self.Debug("  Living in %s from %s to %s (%d days)." % (
-                 residence.country, str(this_start), str(this_end), numdays))
+          residence.country, str(this_start), str(this_end), numdays))
       if include_trips:
         self.Debug("    Business trips:")
         for trip in self.businesstrips:
@@ -141,9 +149,9 @@ class TaxCalendar(object):
       days[residence.country] += numdays
       expected_total = (end - start).days + 1
     if sum(days.values()) != expected_total:
-      raise ValueError("Total days between %s and %s don't match: "
-                       "%d, should be %d, got: " % (
-                       start, end, sum(days.values()), expected_total), days)
+      raise ValueError(
+          "Total days between %s and %s don't match: %d, should be %d, got: " %
+          (start, end, sum(days.values()), expected_total), days)
     how = "including trips" if include_trips else "not including trips"
     self.Debug("    Total days %s: %s" % (how, days.items()))
     return days
@@ -156,6 +164,7 @@ class TaxCalendar(object):
           year, sum(locations.values())))
     return locations
 
+
 # Smoke tests.
-i = Interval("2013-01-28", "2013-02-05", "FR")
-assert datetime.timedelta(8) == i.end - i.start
+test_interval = Interval("2013-01-28", "2013-02-05", "FR")
+assert datetime.timedelta(8) == test_interval.end - test_interval.start

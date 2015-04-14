@@ -1,9 +1,10 @@
 # encoding: utf-8
 
+"""Classes to parse stock tables and generate per-country income reports."""
+
 import collections
 import datetime
 import locale
-import StringIO
 
 import csvtable
 
@@ -26,6 +27,7 @@ COUNTRY_NAMES = {
     "US_CA": "California",
 }
 
+
 def GetCountryCurrency(country):
   try:
     return CURRENCIES[country]
@@ -33,7 +35,10 @@ def GetCountryCurrency(country):
     raise NotImplementedError("Don't know the currency for country %s"
                               % country)
 
+
 class GrantTable(csvtable.CSVTable):
+
+  """A table of stock grants."""
 
   DATE_FORMAT = "%m/%d/%Y"
 
@@ -47,7 +52,7 @@ class GrantTable(csvtable.CSVTable):
     try:
       date = datetime.datetime.strptime(date, self.DATE_FORMAT)
     except ValueError:
-      raise ValueError("Can't parse date '%s' in data row %s" % date, row) 
+      raise ValueError("Can't parse date '%s' in data row %s" % date, row)
     self.data[grant] = date
 
   @staticmethod
@@ -56,6 +61,8 @@ class GrantTable(csvtable.CSVTable):
 
 
 class StockTable(csvtable.CSVTable):
+
+  """A table of stock transactions."""
 
   DATE_FORMAT = "%d-%b-%y"  # 25-Jan-13.
   STATEMENT_COUNTRY = "US"  # To parse currency data and for month names.
@@ -76,7 +83,7 @@ class StockTable(csvtable.CSVTable):
           "GSUS": "Vest Date",
           "OPTIONS": "Exercise Date",
       },
-      "GRANT" : {
+      "GRANT": {
           "GSUS": "Award Number",
           "OPTIONS": "Grant Number",
       },
@@ -219,6 +226,8 @@ class StockTable(csvtable.CSVTable):
   @classmethod
   def ReadFromCSV(cls, year, grant_data, converter, calendar):
 
+    """Reads stock transactions from a multitable CSV."""
+
     def CheckExpectedTables(data, expected):
       if sorted(data.keys()) != sorted(expected):
         raise ValueError("Unexpected tables.\n  Expected: %s\n  Found: %s" % (
@@ -291,7 +300,7 @@ class StockTable(csvtable.CSVTable):
 
     self.countries[country] = True
     self.data[purno][country] = data
-    # TODO: check that the award number, date, etc. are the same
+    # TODO(lorenzo): check that the award number, date, etc. are the same
 
   def SetCheckPercentages(self, check_percentages):
     self.check_percentages = check_percentages
@@ -356,6 +365,7 @@ class StockTable(csvtable.CSVTable):
                if self.calendar.IsCountryOrStateOf(c, country))
 
   def GetCountryPercentage(self, row, country):
+    """Determines the percentage of the given row attributable to a country."""
     total_days = self.GetTotalDays(row)
     country_days = self.GetCountryDays(row, country, True)
     percentage = float(country_days) / total_days
@@ -375,9 +385,10 @@ class StockTable(csvtable.CSVTable):
     return percentage
 
   def GetCountryTotal(self, country, column):
+    """Calculates the total over all rows for a given country."""
     total = 0.0
     currency = GetCountryCurrency(country)
-    for purno, country_data in self.data.iteritems():
+    for unused_purno, country_data in self.data.iteritems():
       if country in country_data:
         data = country_data[country]
         date = data[self.date_column]
@@ -399,6 +410,7 @@ class StockTable(csvtable.CSVTable):
             country, self.GetCountryPercentage(event[country], country) * 100)
 
   def GenerateCountryReport(self, country):
+    """Generates a summary report for the given country."""
     currency = GetCountryCurrency(country)
     columns = self.REPORT_COLUMNS.get(country)
     if not columns:
@@ -461,7 +473,7 @@ class StockTable(csvtable.CSVTable):
 
     # The last row only has the total.
     total = self.CurrencyValueToString(total, country)
-    lastrow = [""] * (len(columns) - 1 ) + [total]
+    lastrow = [""] * (len(columns) - 1) + [total]
     report.append(lastrow)
 
     def HtmlTableRow(l):

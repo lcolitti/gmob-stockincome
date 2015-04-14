@@ -13,9 +13,9 @@ import argparse
 import datetime
 import sys
 
+import currencyconverter
 import stocktable
 import taxcalendar
-import currencyconverter
 
 __version__ = "0.2"
 
@@ -23,23 +23,23 @@ __version__ = "0.2"
 thisyear = datetime.date.today().year
 defaultyear = thisyear - 1
 
-FLAGS = argparse.ArgumentParser(
+flags = argparse.ArgumentParser(
     description=__doc__,
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-FLAGS.add_argument("--calendar", type=str,
+flags.add_argument("--calendar", type=str,
                    default="calendar.csv",
                    help="CSV file listing residence and business trips")
-FLAGS.add_argument("--grants", type=str,
+flags.add_argument("--grants", type=str,
                    default="grants.csv",
                    help="CSV file with GSU and option stock grants")
-FLAGS.add_argument("--check_percentages", type=int,
+flags.add_argument("--check_percentages", type=int,
                    default=0,
                    help="Check US / US_CA percentages against Google numbers")
-FLAGS.add_argument("--year", type=int, default=defaultyear, help="Tax year")
-FLAGS.add_argument("--fx", type=str,
+flags.add_argument("--year", type=int, default=defaultyear, help="Tax year")
+flags.add_argument("--fx", type=str,
                    default=None,
                    help="CSV file with exchange rates, default murc_<year>.csv")
-FLAGS = FLAGS.parse_args(sys.argv[1:])
+FLAGS = flags.parse_args(sys.argv[1:])
 
 
 def main():
@@ -68,8 +68,8 @@ def main():
   print "  Countries:", all_countries
   print
 
-  GSUS = sales["GSUS"]
-  #assert 0.00 == sales["GSUS"].GetCountryPercentage(GSUS["A10751504"]["US"], "US")
+  # GSUS = sales["GSUS"]
+  # assert 0.00 == GSUS.GetCountryPercentage(GSUS["A10751504"]["US"], "US")
 
   print "Country totals:"
   for section, table in sales.iteritems():
@@ -87,4 +87,6 @@ def main():
       open(filename, "w").write(report)
       print "Wrote report on %s for %s to %s" % (section, country, filename)
 
-#main()
+
+if "__name__" == "__main__":
+  main()

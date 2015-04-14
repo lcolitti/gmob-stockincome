@@ -1,8 +1,13 @@
 # coding=UTF-8
 
+"""CSV parsing code."""
+
 import csv
 
+
 class CSVTable(object):
+
+  """Base class to represent a CSV file containing multiple tables."""
 
   def __init__(self, name, headings):
     self.name = name
@@ -16,7 +21,7 @@ class CSVTable(object):
     raise NotImplementedError
 
   def __getitem__(self, i):
-    return self.data[i]    
+    return self.data[i]
 
 
 def CSVReader(filename):
@@ -39,7 +44,7 @@ def ReadMultitableCSV(filename, constructor):
 
   Table name 2, Column heading 1, Column heading 2, ...
   , Row 1 col 1, Row 1 col 2, ...
-  , Row 2 col 1, Row 2 col 2, ...  
+  , Row 2 col 1, Row 2 col 2, ...
   ...
 
   Table objects are created using the specified constructor function, which
@@ -60,7 +65,7 @@ def ReadMultitableCSV(filename, constructor):
 
   reader = CSVReader(filename)
   for row in reader:
-    if not len(row):
+    if not row:
       # Empty line. Skip.
       continue
     name = row[0]
@@ -89,11 +94,14 @@ def ReadCSVTables(tablenames, filenames, constructors):
 
   Args:
     tablenames: A list of strings, the table names.
-    filename: A list of strings, the filenames to read.
-    constructor: A list of functions that create a table object, as above.
+    filenames: A list of strings, the filenames to read.
+    constructors: A list of functions that create a table object, as above.
 
   Returns:
     A dict mapping table names to tables.
+
+  Raises:
+    ValueError: There was a duplicate table name.
   """
   tables = {}
 

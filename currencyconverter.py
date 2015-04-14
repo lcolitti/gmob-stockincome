@@ -1,17 +1,21 @@
 #!/usr/bin/python
 # coding=UTF-8
 
-import csv
+"""Currency conversion code."""
+
 import collections
+import csv
 import datetime
 import re
 
 
 class MURCCurrencyConverter(object):
 
+  """A currency converter that uses the MURC currency data."""
+
   TEST_DATA = {
-    2013: ("27-Jan-13", 55, 4981.35),
-    2014: ("13-Jan-14", 55, 5772.25),
+      2013: ("27-Jan-13", 55, 4981.35),
+      2014: ("13-Jan-14", 55, 5772.25),
   }
 
   BASE_CURRENCY = "JPY"
@@ -63,7 +67,7 @@ class MURCCurrencyConverter(object):
 
       for i, currency in enumerate(self.values.keys()):
         rates = []
-        for j, rate in enumerate(self.RATES):
+        for j, unused_rate in enumerate(self.RATES):
           column = 2 + 3 * i + j
           value = row[column].strip()
           if value:
@@ -77,7 +81,7 @@ class MURCCurrencyConverter(object):
           # No data. Beginning of the year?
           pass
 
-        #if currency == "USD": print date, rates
+        # if currency == "USD": print date, rates
         self.values[currency][date] = rates
 
     if numdates not in (365, 366):
@@ -96,6 +100,7 @@ class MURCCurrencyConverter(object):
                      (rate, currency, self.BASE_CURRENCY, date))
 
   def ConvertCurrency(self, value, from_currency, to_currency, date, rate):
+    """Converts between two currencies using the specified date and rate."""
 
     if from_currency == to_currency:
       return value
@@ -106,7 +111,6 @@ class MURCCurrencyConverter(object):
 
     CheckHasCurrency(from_currency)
     CheckHasCurrency(to_currency)
-
 
     # Convert from from_currency to our base currency.
     if from_currency == self.BASE_CURRENCY:
@@ -120,10 +124,12 @@ class MURCCurrencyConverter(object):
       return base_value / self.GetRate(to_currency, date, rate)
 
   def SanityCheck(self):
+    """Spot checks the data."""
     try:
       datestr, dollars, expected_jpy = self.TEST_DATA[self.year]
     except KeyError:
-      raise NotImplementedError("No FX test datapoint for tax year %d" % year)
+      raise NotImplementedError("No FX test datapoint for tax year %d" %
+                                self.year)
     date = datetime.datetime.strptime(datestr, "%d-%b-%y")
     converted = round(self.ConvertCurrency(55, "USD", "JPY", date, "TTM"), 2)
     msg = ("Self-test failed! Expected %d USD on %s to equal %.2f JPY, got %.2f"
