@@ -71,6 +71,8 @@ class StockTable(csvtable.CSVTable):
       2013: {None: "google_year_end_stock_statement.csv"},
       2014: {"GSUS": "gmob_gsu_data_lorenzo.csv",
              "OPTIONS": "gmob_options_data_lorenzo.csv"},
+      2015: {"GSUS": "gmob_gsu_data_lorenzo.csv",
+             "OPTIONS": "gmob_options_data_lorenzo.csv"},
   }
 
   GOOGLE_PERCENTAGE_HEADING_2013 = ("Percentage of total gain subject to tax "
@@ -96,26 +98,31 @@ class StockTable(csvtable.CSVTable):
           "OPTIONS": {
               2013: "Option Price",
               2014: "Grant Price",
+              2015: "Grant Price",
           }
       },
       "TOTAL": {
           "GSUS": {
               2013: "Total gain (value) of GSUs at vest",
               2014: "GSU's Vested",   # Note HACK in FindColumn!
+              2015: "Total gain of GSU's at vest",
           },
           "OPTIONS": {
               2013: "Total exercisable gain (value)",
               2014: "Total Exercisable Gain",
+              2015: "Total Exercisable Gain",
           }
       },
       "GOOGLE_PERCENTAGE": {
           "GSUS": {
               2013: GOOGLE_PERCENTAGE_HEADING_2013,
               2014: GOOGLE_PERCENTAGE_HEADING_2014,
+              2015: GOOGLE_PERCENTAGE_HEADING_2014,  # Same? What a concept!
           },
           "OPTIONS": {
               2013: GOOGLE_PERCENTAGE_HEADING_2013,
               2014: GOOGLE_PERCENTAGE_HEADING_2014,
+              2015: GOOGLE_PERCENTAGE_HEADING_2014,
           },
       },
   }

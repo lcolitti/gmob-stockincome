@@ -16,6 +16,7 @@ class MURCCurrencyConverter(object):
   TEST_DATA = {
       2013: ("27-Jan-13", 55, 4981.35),
       2014: ("13-Jan-14", 55, 5772.25),
+      2015: ("24-Jun-15", 55, 6813.40),
   }
 
   BASE_CURRENCY = "JPY"
